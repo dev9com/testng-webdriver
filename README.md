@@ -36,7 +36,7 @@ To add the dependency to your project, use the following in your pom.xml:
             <dependency>
                 <groupId>com.dynacrongroup</groupId>
                 <artifactId>testng-webdriver</artifactId>
-                <version>0.0.1</version>
+                <version>1.1</version>
             </dependency>
         </dependencies>
     ...
