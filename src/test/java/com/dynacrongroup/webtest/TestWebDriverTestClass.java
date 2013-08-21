@@ -36,7 +36,7 @@ public class TestWebDriverTestClass extends WebDriverForClass {
     public void searchDynacronGroup() {
         WebElement googleSearch = driver.findElement(By.name("q"));
         googleSearch.sendKeys("Dynacron Group");
-        googleSearch.submit();
-        Assert.assertTrue(driver.getCurrentUrl().endsWith("q=Dynacron+Group"));
+        driver.findElement(By.name("btnG")).click();
+        Assert.assertTrue(driver.getCurrentUrl().contains("q=Dynacron+Group"));
     }
 }
