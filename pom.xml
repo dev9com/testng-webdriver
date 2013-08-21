@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>testng-webdriver</groupId>
+    <groupId>com.dynacrongroup</groupId>
     <artifactId>testng-webdriver</artifactId>
     <version>1.0-SNAPSHOT</version>
 
@@ -18,6 +18,25 @@
         <slf4j.version>1.7.5</slf4j.version>
         <junit-webdriver.version>0.0.7</junit-webdriver.version>
     </properties>
+
+    <distributionManagement>
+        <repository>
+            <id>cloudbees-private-release-repository</id>
+            <name>CloudBees Repository</name>
+            <url>dav:https://repository-dynacrongroup.forge.cloudbees.com/release/</url>
+        </repository>
+        <site>
+            <id>cloudbees-private-release-repository</id>
+            <name>CloudBees Repository</name>
+            <url>dav:https://repository-dynacrongroup.forge.cloudbees.com/release/sites/${project.artifactId}</url>
+        </site>
+    </distributionManagement>
+
+    <scm>
+        <connection>scm:git:git@github.com:dynacron-group/${project.artifactId}.git</connection>
+        <developerConnection>scm:git:git@github.com:dynacron-group/${project.artifactId}.git</developerConnection>
+        <url>scm:git:git@github.com:dynacron-group/${project.artifactId}.git</url>
+    </scm>
 
     <repositories>
         <!-- Grants access to Dynacron dependencies -->
