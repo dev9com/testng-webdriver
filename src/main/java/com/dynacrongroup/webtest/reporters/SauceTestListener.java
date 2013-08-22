@@ -24,6 +24,7 @@ public class SauceTestListener extends TestListenerAdapter {
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
     private ThreadLocalWebDriver threadLocalWebDriver;
     private SauceREST sauceREST;
+    private boolean isRemote;
 
     @Override
     public void onStart(ITestContext testContext) {
@@ -37,6 +38,7 @@ public class SauceTestListener extends TestListenerAdapter {
 
         if (result.getInstance() instanceof TestBase) {
             this.threadLocalWebDriver = ((TestBase) result.getInstance()).unwrapDriver();
+            this.isRemote = threadLocalWebDriver.isRemote();
             if (threadLocalWebDriver.getSessionId() != null) {
                 LOG.debug(String.format("SessionID=%1$s TestName=%2$s",
                                         threadLocalWebDriver.getSessionId(),
@@ -63,7 +65,7 @@ public class SauceTestListener extends TestListenerAdapter {
     @Override
     public void onFinish(ITestContext testContext) {
         super.onFinish(testContext);
-        if (threadLocalWebDriver != null && threadLocalWebDriver.isRemote()) {
+        if (isRemote) {
             if (failed.get()) {
                 sauceREST.jobFailed(getJobId());
             } else {
