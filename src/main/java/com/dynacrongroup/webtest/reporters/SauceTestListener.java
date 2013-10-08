@@ -18,18 +18,15 @@ import org.testng.TestListenerAdapter;
  *
  * @author <a href="mailto:Justin.Graham@dynacrongroup.com">Justin Graham</a>
  * @since 8/8/13
+ *
+ * Note: Deprecating this class until I have time to update using the new annotation method of starting a WebDriver.
  */
+@Deprecated
 public class SauceTestListener extends TestListenerAdapter {
-    private static ThreadLocal<Boolean> failed = new ThreadLocal<Boolean>();
+    private static ThreadLocal<Boolean> failed = new ThreadLocal<Boolean>(){{set(false);}};
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
     private ThreadLocalWebDriver threadLocalWebDriver;
     private SauceREST sauceREST;
-
-    @Override
-    public void onStart(ITestContext testContext) {
-        super.onStart(testContext);
-        failed.set(false);
-    }
 
     @Override
     public void onTestStart(ITestResult result) {

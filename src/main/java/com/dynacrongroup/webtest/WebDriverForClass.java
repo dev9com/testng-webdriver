@@ -35,6 +35,7 @@ import org.testng.annotations.BeforeClass;
  * @author <a href="mailto:Justin.Graham@dynacrongroup.com">Justin Graham</a>
  * @since 8/7/13
  */
+@Deprecated
 public class WebDriverForClass implements TestBase {
 
     protected WebDriver driver;

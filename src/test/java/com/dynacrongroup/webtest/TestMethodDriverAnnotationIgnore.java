@@ -9,29 +9,24 @@ import org.testng.annotations.Test;
 
 @Test
 @Listeners({SeleniumWebDriver.class})
-public class TestMethodDriverAnnotation {
+public class TestMethodDriverAnnotationIgnore {
 
-    @MethodDriver
+    @MethodDriver(excludeMethods = {"testMethod1", "testMethod3"})
     public WebDriver methodDriver;
 
     public String search = "https://www.google.com/";
 
-    public String maps = "https://maps.google.com/";
+    public void testMethod1() throws InterruptedException {
+        Assert.assertTrue(methodDriver == null);
+    }
 
-    public String news = "https://news.google.com/";
-
-    public void testMethod1() {
+    public void testMethod2() {
         methodDriver.get(search);
         Assert.assertTrue(methodDriver.getCurrentUrl().equals(search));
     }
 
-    public void testMethod2() {
-        methodDriver.get(maps);
-        Assert.assertTrue(methodDriver.getCurrentUrl().equals(maps));
-    }
-
+    @Test
     public void testMethod3() {
-        methodDriver.get(news);
-        Assert.assertTrue(methodDriver.getCurrentUrl().equals(news));
+        Assert.assertTrue(methodDriver == null);
     }
 }
