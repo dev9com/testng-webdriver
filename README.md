@@ -6,15 +6,15 @@ Library of resources for writing tests using Selenium WebDriver in TestNG.
 Features
 ---------------
 
-testng-webdriver currently has the following features.
+testng-webdriver currently has the following features:
 
 * Provides a WebDriver to a TestNG test class
 * Option to build a Driver before a class or before a method and destroy it afterwards automatically
 * Driver is configured using TypeSafe config library
-* Configuration can be overridden at the class level by providing a configuration file under src/test/resources/{package}/{class}.conf
-* Configuration can be overridden using namespacing under a profile name, which is triggered using the webtest.profile system property.
-* WebDrivers provided is thread local and thread safe, permitting parametrized and parallelled testing.
-* Browsers provided can be local or remote, through sauce labs.
+* Configuration can be overridden at the class level by providing a configuration file under _src/test/resources/{package}/{class}.conf_
+* Configuration can be overridden using namespacing under a profile name, which is triggered using the _webtest.profile_ system property.
+* The WebDriver provided is thread local and thread safe, permitting parameterized and paralleled testing.
+* Browsers provided can be local or remote, through [Sauce Labs](https://saucelabs.com/).
 
 Usage
 ---------------
