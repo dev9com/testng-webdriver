@@ -70,7 +70,7 @@ test.  This file should be stored in your project under src/test/resources/appli
                 browser:    iexplore
                 type:       remote
                 version:    "8"
-                platform:   linux
+                platform:   windows
             }
         }
         ```
