@@ -1,19 +1,25 @@
 package com.dynacrongroup.webtest;
 
+import com.dynacrongroup.webtest.annotation.ClassDriver;
+import com.dynacrongroup.webtest.annotation.MethodDriver;
+import org.openqa.selenium.WebDriver;
 import org.testng.ITestNGMethod;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public final class TestClass {
     private Field webDriverField;
     private Class driverAnnotation;
     private Class testClass;
     private boolean enabled = true;
-    private boolean webDriverRunning = false;
     private List<String> excludedMethods = new ArrayList<String>();
-    private Object classInstance;
-    private List<ITestNGMethod> invokedMethods = new ArrayList<ITestNGMethod>();
+    private Object classInstance = new Object();
+    private Map<String, Integer> testMethods = new HashMap<String, Integer>();
 
     public TestClass setWebDriverField(Field webDriverField) {
         this.webDriverField = webDriverField;
@@ -45,13 +51,27 @@ public final class TestClass {
         return this;
     }
 
-    public TestClass addInvokedMethod(ITestNGMethod method) {
-        invokedMethods.add(method);
+    public TestClass addTestMethod(ITestNGMethod method) {
+        int count = (testMethods.get(method.getMethodName()) == null) ? 0 : testMethods.get(method.getMethodName());
+
+        if (count == 0) {
+            testMethods.put(method.getMethodName(), 1);
+        } else {
+            testMethods.put(method.getMethodName(), count + 1);
+        }
         return this;
     }
 
-    public TestClass setWebDriverRunning(boolean running) {
-        this.webDriverRunning = running;
+    public TestClass removeTestMethod(ITestNGMethod method) {
+        int count = (testMethods.get(method.getMethodName()) == null) ? -1 : testMethods.get(method.getMethodName());
+
+        // If we only have one left remove the method as completed
+        if (count == 1) {
+            testMethods.remove(method.getMethodName());
+        // If we have more then one drop count by one
+        } else if (count > 1){
+            testMethods.put(method.getMethodName(), count - 1);
+        }
         return this;
     }
 
@@ -76,14 +96,28 @@ public final class TestClass {
     }
 
     public boolean isWebDriverRunning() {
-        return webDriverRunning;
+        try {
+            return getWebDriverField().get(getClassInstance()) instanceof WebDriver;
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        return true;
     }
 
     public Object getClassInstance() {
         return classInstance;
     }
 
-    public List<ITestNGMethod> getInvokedMethods() {
-        return invokedMethods;
+    public int methodsLeftInClass() {
+        return testMethods.size();
+    }
+
+    public boolean isMethodDriver() {
+        return driverAnnotation.equals(MethodDriver.class);
+    }
+
+    public boolean isClassDriver() {
+        return driverAnnotation.equals(ClassDriver.class);
     }
 }

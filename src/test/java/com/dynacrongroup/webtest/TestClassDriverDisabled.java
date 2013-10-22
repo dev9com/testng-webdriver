@@ -1,7 +1,7 @@
 package com.dynacrongroup.webtest;
 
 import com.dynacrongroup.webtest.annotation.ClassDriver;
-import com.dynacrongroup.webtest.reporters.SeleniumWebDriver;
+import com.dynacrongroup.webtest.listeners.SeleniumWebDriver;
 import org.openqa.selenium.WebDriver;
 import org.testng.Assert;
 import org.testng.annotations.Listeners;

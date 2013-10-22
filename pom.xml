@@ -10,8 +10,6 @@
 
     <properties>
         <!-- Dependency version numbers -->
-        <selenium.version>2.33.0</selenium.version>
-        <phantomjs.version>1.0.1</phantomjs.version>
         <operadriver.version>1.2</operadriver.version>
         <testng.version>6.1.1</testng.version>
         <mockito.version>1.9.0</mockito.version>
@@ -51,18 +49,6 @@
             <groupId>com.dynacrongroup</groupId>
             <artifactId>junit-webdriver</artifactId>
             <version>${junit-webdriver.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-java</artifactId>
-            <version>${selenium.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>phantomjs</artifactId>
-            <version>${phantomjs.version}</version>
         </dependency>
 
         <dependency>
