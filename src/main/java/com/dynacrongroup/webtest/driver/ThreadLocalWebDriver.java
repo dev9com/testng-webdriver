@@ -1,17 +1,13 @@
 package com.dynacrongroup.webtest.driver;
 
 import com.dynacrongroup.webtest.util.SauceUtils;
-import org.openqa.selenium.By;
-import org.openqa.selenium.HasInputDevices;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.Keyboard;
-import org.openqa.selenium.Mouse;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
+import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Set;
 
@@ -32,9 +28,33 @@ public class ThreadLocalWebDriver implements WebDriver, JavascriptExecutor, HasI
     public ThreadLocalWebDriver(Class clazz) {
         testClass.set(clazz);
         targetWebDriver.set(new TargetWebDriver(testClass.get()));
-        driver.set(targetWebDriver.get().build());
-        jobId.set(SauceUtils.getJobId(driver.get()));
+        init();
+    }
+
+    public ThreadLocalWebDriver(Class clazz, String testDescription) {
+        testClass.set(clazz);
+        TargetWebDriver targetDriver = new TargetWebDriver(clazz);
+
+        if (testDescription != null && !testDescription.equals("")) {
+            targetDriver.getCapabilities().setCapability("name", testDescription);
+        }
+
+        targetWebDriver.set(targetDriver);
+        init();
+    }
+
+    private void init() {
+        setDriver(targetWebDriver.get());
+        setJobId();
         reportURL();
+    }
+
+    private void setDriver(TargetWebDriver d) {
+        driver.set(d.build());
+    }
+
+    private void setJobId() {
+        jobId.set(SauceUtils.getJobId(driver.get()));
     }
 
     public String getJobUrl() {

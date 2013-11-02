@@ -20,16 +20,19 @@ public class TestMethodDriverAnnotation {
 
     public String news = "https://news.google.com/";
 
+    @Test(description = "Scenario: Assert we found www.google.com")
     public void testMethod1() {
         methodDriver.get(search);
         Assert.assertTrue(methodDriver.getCurrentUrl().equals(search));
     }
 
+    @Test(description = "Scenario: Assert we found maps.google.com")
     public void testMethod2() {
         methodDriver.get(maps);
         Assert.assertTrue(methodDriver.getCurrentUrl().equals(maps));
     }
 
+    @Test(description = "Scenario: Assert we found news.google.com")
     public void testMethod3() {
         methodDriver.get(news);
         Assert.assertTrue(methodDriver.getCurrentUrl().equals(news));

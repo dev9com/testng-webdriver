@@ -1,6 +1,5 @@
 package com.dynacrongroup.webtest.listeners;
 
-import com.dynacrongroup.webtest.TestClass;
 import com.dynacrongroup.webtest.annotation.ClassDriver;
 import com.dynacrongroup.webtest.annotation.MethodDriver;
 import com.dynacrongroup.webtest.driver.ThreadLocalWebDriver;
@@ -11,8 +10,7 @@ import org.testng.ITestResult;
 import org.testng.TestListenerAdapter;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * The purpose of this class is to start a new WebDriver instance on an annotated WebDriver variable.
@@ -21,22 +19,38 @@ import java.util.Map;
  * @since 10/1/13
  */
 public class SeleniumWebDriver extends TestListenerAdapter {
-    private ThreadLocal<Map<Class, TestClass>> driverTestClasses = new ThreadLocal<Map<Class, TestClass>>();
+
+    private static Map<Class, List<ITestNGMethod>> classListMap = new HashMap<Class, List<ITestNGMethod>>();
+    ThreadLocal<Field> webDriverField = new ThreadLocal<Field>();
+    // Keeps track if Driver annotation exists and if driver is enabled
+    ThreadLocal<Boolean> isDriverTest = new ThreadLocal<Boolean>() {{
+        set(false);
+    }};
+    ThreadLocal<List<String>> excludedMethods = new ThreadLocal<List<String>>();
+    ThreadLocal<String> testDescription = new ThreadLocal<String>();
+    ThreadLocal<Object> testClassInstance = new ThreadLocal<Object>();
 
     /*==========================================================================
                                          Start
       ==========================================================================*/
 
     @Override
-    public void onStart(ITestContext testContext) {
-        super.onStart(testContext);
-        setDriverTestClasses(testContext);
+    public void onStart(ITestContext tc) {
+        super.onStart(tc);
+        setClassListMap(tc);
     }
 
     @Override
     public void onTestStart(ITestResult tr) {
         super.onTestStart(tr);
-        startDriver(tr);
+        setWebDriverField(tr);
+        setTestDescription(tr);
+        setTestClassInstance(tr);
+        if (isDriverTest.get()) {
+            setIsTestDisabled(webDriverField.get());
+            setExcludedMethods(webDriverField.get());
+            startDriver(tr);
+        }
     }
 
     /*==========================================================================
@@ -46,139 +60,166 @@ public class SeleniumWebDriver extends TestListenerAdapter {
     @Override
     public void onTestSuccess(ITestResult tr) {
         super.onTestSuccess(tr);
-        endOfMethodCleanUp(tr);
+        endDriver(tr);
     }
 
     @Override
     public void onTestFailure(ITestResult tr) {
         super.onTestFailure(tr);
-        endOfMethodCleanUp(tr);
+        endDriver(tr);
     }
 
     @Override
     public void onTestSkipped(ITestResult tr) {
         super.onTestSkipped(tr);
-        endOfMethodCleanUp(tr);
+        endDriver(tr);
     }
 
     /*==========================================================================
                                       Class Methods
       ==========================================================================*/
 
-    private void startDriver(ITestResult result) {
-        Class currentTest = result.getTestClass().getRealClass();
-        Map<Class, TestClass> allClasses = driverTestClasses.get();
-        TestClass currentTestClass = allClasses.get(currentTest);
-        currentTestClass.setClassInstance(result.getInstance());
-
-        try {
-            if (shouldStartDriver(result, currentTestClass)) {
-                currentTestClass.getWebDriverField().set(
-                        currentTestClass.getClassInstance(), new ThreadLocalWebDriver(this.getClass()));
-            }
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void endOfMethodCleanUp(ITestResult result) {
-        Class currentTest = result.getTestClass().getRealClass();
-        Map<Class, TestClass> allClasses = driverTestClasses.get();
-        TestClass currentTestClass = allClasses.get(currentTest).removeTestMethod(result.getMethod());
-        if (shouldKillDriver(currentTestClass)) {
-            killDriver(currentTestClass);
-        }
-    }
-
-    private void killDriver(TestClass currentTestClass) {
-        try {
-            ((WebDriver) currentTestClass.getWebDriverField().get(currentTestClass.getClassInstance())).quit();
-            currentTestClass.getWebDriverField().set(currentTestClass.getClassInstance(), null);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Creates a new TestClass if the Class passed in contains @ClassDriver or @MethodDriver
-     *
-     * @param clazz the Class to check for annotation
-     * @return TestClass boject
-     */
-    private TestClass getTestClass(Class clazz) {
-        for (Field classField : clazz.getFields()) {
-            if (classField.isAnnotationPresent(ClassDriver.class)) {
-                return new TestClass()
-                        .setDriverAnnotation(ClassDriver.class)
-                        .setWebDriverField(classField)
-                        .setTestClass(clazz)
-                        .setEnabled(classField.getAnnotation(ClassDriver.class).enabled());
-            } else if (classField.isAnnotationPresent(MethodDriver.class)) {
-                MethodDriver md = classField.getAnnotation(MethodDriver.class);
-                return new TestClass()
-                        .setDriverAnnotation(MethodDriver.class)
-                        .setWebDriverField(classField)
-                        .setTestClass(clazz)
-                        .setEnabled(md.enabled())
-                        .setExcludedMethods(md.excludeMethods());
-            }
-        }
-
-        return null;
-    }
-
-    private boolean shouldStartDriver(ITestResult result, TestClass tc) {
-        // Validate the TestClass was created, the @Driver is enabled, and the driver has not already been started.
-        if (tc != null && tc.isEnabled() && !tc.isWebDriverRunning()) {
-            boolean isMethodExcluded = tc.getExcludedMethods()
-                    .contains(result.getMethod().getMethodName());
-
-            if ((tc.isClassDriver()) || (tc.isMethodDriver() && !isMethodExcluded)) {
-                tc.setClassInstance(result.getInstance());
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private boolean shouldKillDriver(TestClass currentTestClass) {
-        if (currentTestClass != null && currentTestClass.isWebDriverRunning()) {
-            if (currentTestClass.isClassDriver()) {
-                return currentTestClass.methodsLeftInClass() == 0;
-            } else {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void setDriverTestClasses(ITestContext testContext) {
-        Map<Class, TestClass> driverClasses = new HashMap<Class, TestClass>();
-        ITestNGMethod[] allTestMethods = testContext.getAllTestMethods();
-
-        // Check every test method's class for a driver annotation
-        // If we have not already added it and we find that the class contains the
-        // annotation add it to the driverClasses map
-        for (ITestNGMethod testMethod : allTestMethods) {
-            Class currentTestClass = testMethod.getRealClass();
-            TestClass tc = driverClasses.get(currentTestClass);
-
-            // Check to see if the test class has already been created
-            if (tc == null) {
-                tc = getTestClass(currentTestClass);
-
-                // If an annotation was found then add the test class
-                if (tc != null) {
-                    driverClasses.put(currentTestClass, tc.addTestMethod(testMethod));
+    private void startDriver(ITestResult tr) {
+        if (isDriverTest.get()) {
+            if (!isTestExcluded(tr)) {
+                if (!isDriverRunning()) {
+                    initializeDriver(tr);
                 }
-            // If the class has already been created then we need to add this method is contained within the class
             } else {
-                driverClasses.get(currentTestClass).addTestMethod(testMethod);
+                setDriverNull();
             }
         }
+    }
 
-        //Once all classes have been accounted for set in preparation of test execution
-        this.driverTestClasses.set(driverClasses);
+    private void initializeDriver(ITestResult tr) {
+        try {
+            webDriverField.get().set(
+                    testClassInstance.get(), new ThreadLocalWebDriver(getRealTestClass(tr), testDescription.get()));
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void endDriver(ITestResult tr) {
+        if (isClassDriver()) {
+            ITestNGMethod current = tr.getMethod();
+            Class currentClass = current.getRealClass();
+            List<ITestNGMethod> remainingMethods = classListMap.get(currentClass);
+            ITestNGMethod foundMethod = null;
+            for (ITestNGMethod m : remainingMethods) {
+                if (m.getMethodName().equals(current.getMethodName())) {
+                    foundMethod = m;
+                    int count = m.getInvocationCount();
+                    if (count > 1) {
+                        m.setInvocationCount(count - 1);
+                        return;
+                    }
+                }
+            }
+
+            if (foundMethod != null) {
+                remainingMethods.remove(foundMethod);
+            }
+
+            if (remainingMethods.size() == 0) {
+                quitDriver();
+            }
+        } else {
+            quitDriver();
+        }
+    }
+
+    private void quitDriver() {
+        try {
+            WebDriver driver = (WebDriver) webDriverField.get().get(testClassInstance.get());
+            driver.quit();
+        } catch (Exception e) {/* Ignore if driver has already quit */ }
+    }
+
+    private void setDriverNull() {
+        try {
+            webDriverField.get().set(testClassInstance.get(), null);
+        } catch (Exception e) {/* Ignore error */ }
+    }
+
+    private boolean isTestExcluded(ITestResult tr) {
+        return excludedMethods.get() != null && excludedMethods.get().contains(tr.getMethod().getMethodName());
+    }
+
+    private boolean isDriverRunning() {
+        Field webDriver = webDriverField.get();
+        if (webDriver == null) return false;
+
+        // Horrid way to check if .quit() was called on the driver.
+        try {
+            WebDriver driver = (WebDriver) webDriver.get(testClassInstance.get());
+            driver.getTitle();
+            return true;
+        } catch (Exception e) { return false; }
+    }
+
+    private Class getRealTestClass(ITestResult tr) {
+        return tr.getTestClass().getRealClass();
+    }
+
+    private void setWebDriverField(ITestResult tr) {
+        Class testClass = getRealTestClass(tr);
+        for (Field classField : testClass.getFields()) {
+            if (classField.isAnnotationPresent(ClassDriver.class)) {
+                webDriverField.set(classField);
+                isDriverTest.set(true);
+                return;
+            } else if (classField.isAnnotationPresent(MethodDriver.class)) {
+                webDriverField.set(classField);
+                isDriverTest.set(true);
+                return;
+            }
+        }
+    }
+
+    private void setIsTestDisabled(Field driverField) {
+        boolean enabled;
+        if (driverField.isAnnotationPresent(ClassDriver.class)) {
+            enabled = driverField.getAnnotation(ClassDriver.class).enabled();
+        } else {
+            enabled = driverField.getAnnotation(MethodDriver.class).enabled();
+        }
+        isDriverTest.set(enabled);
+    }
+
+    private void setExcludedMethods(Field driverField) {
+        if (driverField.isAnnotationPresent(MethodDriver.class)) {
+            excludedMethods.set(Arrays.asList(driverField.getAnnotation(MethodDriver.class).excludeMethods()));
+        }
+    }
+
+    private void setClassListMap(ITestContext tc) {
+        for (ITestNGMethod m : tc.getAllTestMethods()) {
+            Class methodsClass = m.getRealClass();
+
+            List<ITestNGMethod> methods = classListMap.get(methodsClass);
+            if (methods == null) {
+                methods = new ArrayList<ITestNGMethod>();
+            }
+            methods.add(m);
+            classListMap.put(methodsClass, methods);
+        }
+    }
+
+    private void setTestDescription(ITestResult tr) {
+        String description = tr.getMethod().getDescription();
+        if (description != null && !description.equals("")) {
+            testDescription.set(description);
+        } else {
+            testDescription.set(null);
+        }
+    }
+
+    private void setTestClassInstance(ITestResult tr) {
+        testClassInstance.set(tr.getInstance());
+    }
+
+    private boolean isClassDriver() {
+        return webDriverField.get().isAnnotationPresent(ClassDriver.class);
     }
 }
