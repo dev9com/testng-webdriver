@@ -11,22 +11,24 @@ import org.testng.annotations.Test;
 @Listeners({SeleniumWebDriver.class})
 public class TestMethodDriverAnnotationIgnore {
 
-    @MethodDriver(excludeMethods = {"testMethod1", "testMethod3"})
-    public WebDriver methodDriver;
+    @MethodDriver(excludeMethods = {"assertMethodDriverUninitialized1", "assertMethodDriverUninitialized2"})
+    WebDriver methodDriver;
 
-    public String search = "https://www.google.com/";
+    public String search = "http://www.yahoo.com/";
 
-    public void testMethod1() throws InterruptedException {
-        Assert.assertTrue(methodDriver == null);
+    public void assertMethodDriverUninitialized1() throws InterruptedException {
+        Assert.assertTrue(methodDriver == null, "WebDriver != null");
     }
 
-    public void testMethod2() {
+    @Test(dependsOnMethods = {"assertMethodDriverUninitialized1"})
+    public void navigateMethodDriverToSearch() {
         methodDriver.get(search);
-        Assert.assertTrue(methodDriver.getCurrentUrl().equals(search));
+        String url = methodDriver.getCurrentUrl();
+        Assert.assertTrue(url.equals(search), url + " != " + search);
     }
 
-    @Test
-    public void testMethod3() {
-        Assert.assertTrue(methodDriver == null);
+    @Test(dependsOnMethods = {"navigateMethodDriverToSearch"})
+    public void assertMethodDriverUninitialized2() {
+        Assert.assertTrue(methodDriver == null, "WebDriver != null");
     }
 }

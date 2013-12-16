@@ -13,7 +13,7 @@ public class TestClassDriverDisabled {
     @ClassDriver(enabled = false)
     public WebDriver driver;
 
-    public void testMethod() {
-        Assert.assertTrue(driver == null);
+    public void assertClassDriverUninitialized() {
+        Assert.assertTrue(driver == null, "WebDriver != null");
     }
 }

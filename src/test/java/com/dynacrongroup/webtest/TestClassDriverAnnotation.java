@@ -13,23 +13,20 @@ import org.testng.annotations.Test;
 public class TestClassDriverAnnotation {
 
     @ClassDriver
-    public WebDriver classDriver;
+    WebDriver classDriver;
 
-    public String search = "https://www.google.com/";
+    public String search = "http://www.yahoo.com/";
 
-    public String maps = "https://maps.google.com/";
-
-    public void testMethod1() throws InterruptedException {
+    @Test
+    public void navigateClassToSearch() throws Exception {
         classDriver.get(search);
-        Assert.assertTrue(classDriver.getCurrentUrl().equals(search));
+        String url = classDriver.getCurrentUrl();
+        Assert.assertTrue(url.equals(search), url + " != " + search);
     }
 
-    public void testMethod2() {
-        Assert.assertTrue(classDriver.getCurrentUrl().equals(search));
-    }
-
-    public void testMethod3() {
-        classDriver.get(maps);
-        Assert.assertTrue(classDriver.getCurrentUrl().equals(maps));
+    @Test(dependsOnMethods = {"navigateClassToSearch"})
+    public void assertClassPersistence() {
+        String url = classDriver.getCurrentUrl();
+        Assert.assertTrue(url.equals(search), url + " != " + search);
     }
 }

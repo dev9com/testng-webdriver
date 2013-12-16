@@ -43,12 +43,11 @@ public class SeleniumWebDriver extends TestListenerAdapter {
     @Override
     public void onTestStart(ITestResult tr) {
         super.onTestStart(tr);
-        setWebDriverField(tr);
+        checkForWebDriverField(tr);
         setTestDescription(tr);
         setTestClassInstance(tr);
+
         if (isDriverTest.get()) {
-            setIsTestDisabled(webDriverField.get());
-            setExcludedMethods(webDriverField.get());
             startDriver(tr);
         }
     }
@@ -98,6 +97,10 @@ public class SeleniumWebDriver extends TestListenerAdapter {
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
+    }
+
+    private void setDriverFieldAccessible() {
+        webDriverField.get().setAccessible(true);
     }
 
     private void endDriver(ITestResult tr) {
@@ -158,41 +161,51 @@ public class SeleniumWebDriver extends TestListenerAdapter {
         } catch (Exception e) { return false; }
     }
 
+    /**
+     * Returns the real Class from TestNG's TestResult object
+     *
+     * @param tr ITestResult from TestNG
+     * @return the class the current test method is running in
+     */
     private Class getRealTestClass(ITestResult tr) {
         return tr.getTestClass().getRealClass();
     }
 
-    private void setWebDriverField(ITestResult tr) {
+    /**
+     * Populates the webDriverField with the Driver Annotated field and sets
+     * isDriverTest to true if the Annotation was found.
+     *
+     * TODO: If the users defines multiple drivers within the testClass fail.
+     *
+     * @param tr ITestResult from TestNG
+     */
+    private void checkForWebDriverField(ITestResult tr) {
         Class testClass = getRealTestClass(tr);
-        for (Field classField : testClass.getFields()) {
+        for (Field classField : testClass.getDeclaredFields()) {
             if (classField.isAnnotationPresent(ClassDriver.class)) {
-                webDriverField.set(classField);
-                isDriverTest.set(true);
+                setWebDriverField(classField);
+                isDriverTest.set(classField.getAnnotation(ClassDriver.class).enabled());
                 return;
             } else if (classField.isAnnotationPresent(MethodDriver.class)) {
-                webDriverField.set(classField);
-                isDriverTest.set(true);
+                setWebDriverField(classField);
+                isDriverTest.set(classField.getAnnotation(MethodDriver.class).enabled());
+                excludedMethods.set(Arrays.asList(classField.getAnnotation(MethodDriver.class).excludeMethods()));
                 return;
             }
         }
     }
 
-    private void setIsTestDisabled(Field driverField) {
-        boolean enabled;
-        if (driverField.isAnnotationPresent(ClassDriver.class)) {
-            enabled = driverField.getAnnotation(ClassDriver.class).enabled();
-        } else {
-            enabled = driverField.getAnnotation(MethodDriver.class).enabled();
-        }
-        isDriverTest.set(enabled);
+    private void setWebDriverField(Field classField) {
+        webDriverField.set(classField);
+        isDriverTest.set(true);
+        setDriverFieldAccessible();
     }
 
-    private void setExcludedMethods(Field driverField) {
-        if (driverField.isAnnotationPresent(MethodDriver.class)) {
-            excludedMethods.set(Arrays.asList(driverField.getAnnotation(MethodDriver.class).excludeMethods()));
-        }
-    }
-
+    /**
+     * Populates the ClassListMap with key=testClass, value=list of testMethods
+     *
+     * @param tc ITestContext from TestNG
+     */
     private void setClassListMap(ITestContext tc) {
         for (ITestNGMethod m : tc.getAllTestMethods()) {
             Class methodsClass = m.getRealClass();
@@ -206,6 +219,11 @@ public class SeleniumWebDriver extends TestListenerAdapter {
         }
     }
 
+    /**
+     * Sets the testDescription to the description on the testMethod
+     *
+     * @param tr ITestResult from TestNG
+     */
     private void setTestDescription(ITestResult tr) {
         String description = tr.getMethod().getDescription();
         if (description != null && !description.equals("")) {
@@ -215,11 +233,16 @@ public class SeleniumWebDriver extends TestListenerAdapter {
         }
     }
 
+    /**
+     * Populates the testClassInstance field with the Object we are currently running
+     *
+     * @param tr ITestResult from TestNG
+     */
     private void setTestClassInstance(ITestResult tr) {
         testClassInstance.set(tr.getInstance());
     }
 
     private boolean isClassDriver() {
-        return webDriverField.get().isAnnotationPresent(ClassDriver.class);
+        return webDriverField.get() != null && webDriverField.get().isAnnotationPresent(ClassDriver.class);
     }
 }

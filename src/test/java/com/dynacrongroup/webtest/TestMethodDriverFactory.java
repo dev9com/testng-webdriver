@@ -4,28 +4,36 @@ import com.dynacrongroup.webtest.annotation.MethodDriver;
 import com.dynacrongroup.webtest.listeners.SeleniumWebDriver;
 import org.openqa.selenium.WebDriver;
 import org.testng.Assert;
-import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
+import util.Util;
 
+import static util.Util.sleep;
+
+/**
+ * The purpose of this class is to verify method driver is created when the test class contains a factory.
+ *
+ * @author <a href="mailto:Justin.Graham@dynacrongroup.com">Justin Graham</a>
+ * @since 11/4/13
+ */
+@Test
 @Listeners({SeleniumWebDriver.class})
-public class TestMethodDriverParallel {
-
+public class TestMethodDriverFactory {
     @MethodDriver
     public WebDriver driver;
 
-    @DataProvider(parallel = true)
-    public Object[][] dataProvider() {
-        return new Object[][] {
-                {"http://www.google.com", 1},
-                {"http://www.yahoo.com/", 2},
-                {"https://www.facebook.com/", 3},
-                {"https://twitter.com/", 4}
-        };
+    private int i;
+    private String url;
+
+    @Factory(dataProvider = "dataProvider", dataProviderClass = Util.class)
+    public TestMethodDriverFactory(String url, int i) {
+        this.url = url;
+        this.i = i;
     }
 
-    @Test(threadPoolSize = 4, dataProvider = "dataProvider")
-    public void testMethod1(String url, int i) throws Exception {
+    @Test
+    public void testFactoryValues() throws Exception {
         driver.get(url);
 
         String currentUrl = driver.getCurrentUrl();
@@ -40,19 +48,15 @@ public class TestMethodDriverParallel {
                 sleep();
                 break;
             case 3:
-                Assert.assertTrue(currentUrl.contains("www.facebook.com"));
+                Assert.assertTrue(currentUrl.contains("www.wikipedia.org"));
                 sleep();
                 break;
             case 4:
-                Assert.assertTrue(currentUrl.contains("twitter.com"));
+                Assert.assertTrue(currentUrl.contains("github.com/"));
                 sleep();
                 break;
             default:
                 throw new IllegalStateException("[" + i + "] is an unknown url digit!");
         }
-    }
-
-    private void sleep() throws InterruptedException {
-        Thread.sleep(2000);
     }
 }
