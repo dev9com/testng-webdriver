@@ -9,6 +9,9 @@ import org.testng.annotations.DataProvider;
  * @since 11/4/13
  */
 public final class Util {
+    public static final String HTTP_PROTOCOL = "http://";
+    public static final String YAHOO_DOMAIN = "www.yahoo.com/";
+
     public static void sleep() throws InterruptedException {
         Thread.sleep(2000);
     }

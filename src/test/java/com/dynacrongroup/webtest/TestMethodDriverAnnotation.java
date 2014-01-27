@@ -7,6 +7,9 @@ import org.testng.Assert;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
+import static util.Util.HTTP_PROTOCOL;
+import static util.Util.YAHOO_DOMAIN;
+
 @Test
 @Listeners({SeleniumWebDriver.class})
 public class TestMethodDriverAnnotation {
@@ -14,19 +17,17 @@ public class TestMethodDriverAnnotation {
     @MethodDriver
     WebDriver methodDriver;
 
-    public String search = "http://www.yahoo.com/";
-
     @Test(description = "Scenario: Assert we found www.yahoo.com")
     public void navigateMethodToSearch() {
-        methodDriver.get(search);
+        methodDriver.get(HTTP_PROTOCOL + YAHOO_DOMAIN);
         String url = methodDriver.getCurrentUrl();
-        Assert.assertTrue(url.equals(search), url + " != " + search);
+        Assert.assertTrue(url.endsWith(YAHOO_DOMAIN), "False: " + url + " endsWith " + YAHOO_DOMAIN);
     }
 
     @Test(description = "Scenario: Assert we opened a new browser",
           dependsOnMethods = {"navigateMethodToSearch"})
     public void assertNoPersistence() {
         String url = methodDriver.getCurrentUrl();
-        Assert.assertFalse(url.equals(search), url + " == " + search);
+        Assert.assertFalse(url.endsWith(YAHOO_DOMAIN), "True: " + url + " endsWith " + YAHOO_DOMAIN);
     }
 }

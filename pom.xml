@@ -13,7 +13,7 @@
         <testng.version>6.1.1</testng.version>
         <mockito.version>1.9.0</mockito.version>
         <slf4j.version>1.7.5</slf4j.version>
-        <junit-webdriver.version>0.0.7</junit-webdriver.version>
+        <junit-webdriver.version>1.0.1</junit-webdriver.version>
     </properties>
 
     <distributionManagement>
