@@ -35,7 +35,7 @@ Usage
                 <dependency>
                     <groupId>com.dynacrongroup</groupId>
                     <artifactId>testng-webdriver</artifactId>
-                    <version>2.1</version>
+                    <version>2.2</version>
                 </dependency>
             </dependencies>
         ...
