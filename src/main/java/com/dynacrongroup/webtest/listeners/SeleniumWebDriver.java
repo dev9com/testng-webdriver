@@ -27,8 +27,6 @@ public class SeleniumWebDriver extends TestListenerAdapter {
         set(false);
     }};
     ThreadLocal<List<String>> excludedMethods = new ThreadLocal<List<String>>();
-    ThreadLocal<String> testDescription = new ThreadLocal<String>();
-    ThreadLocal<Object> testClassInstance = new ThreadLocal<Object>();
 
     /*==========================================================================
                                          Start
@@ -44,8 +42,6 @@ public class SeleniumWebDriver extends TestListenerAdapter {
     public void onTestStart(ITestResult tr) {
         super.onTestStart(tr);
         checkForWebDriverField(tr);
-        setTestDescription(tr);
-        setTestClassInstance(tr);
 
         if (isDriverTest.get()) {
             startDriver(tr);
@@ -81,11 +77,11 @@ public class SeleniumWebDriver extends TestListenerAdapter {
     private void startDriver(ITestResult tr) {
         if (isDriverTest.get()) {
             if (!isTestExcluded(tr)) {
-                if (!isDriverRunning()) {
+                if (!isDriverRunning(tr)) {
                     initializeDriver(tr);
                 }
             } else {
-                setDriverNull();
+                setDriverNull(tr);
             }
         }
     }
@@ -93,7 +89,7 @@ public class SeleniumWebDriver extends TestListenerAdapter {
     private void initializeDriver(ITestResult tr) {
         try {
             webDriverField.get().set(
-                    testClassInstance.get(), new ThreadLocalWebDriver(getRealTestClass(tr), testDescription.get()));
+                    tr.getInstance(), new ThreadLocalWebDriver(getRealTestClass(tr), getTestDescription(tr)));
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
@@ -125,23 +121,23 @@ public class SeleniumWebDriver extends TestListenerAdapter {
             }
 
             if (remainingMethods.size() == 0) {
-                quitDriver();
+                quitDriver(tr);
             }
         } else {
-            quitDriver();
+            quitDriver(tr);
         }
     }
 
-    private void quitDriver() {
+    private void quitDriver(ITestResult tr) {
         try {
-            WebDriver driver = (WebDriver) webDriverField.get().get(testClassInstance.get());
+            WebDriver driver = (WebDriver) webDriverField.get().get(tr.getInstance());
             driver.quit();
         } catch (Exception e) {/* Ignore if driver has already quit */ }
     }
 
-    private void setDriverNull() {
+    private void setDriverNull(ITestResult tr) {
         try {
-            webDriverField.get().set(testClassInstance.get(), null);
+            webDriverField.get().set(tr.getInstance(), null);
         } catch (Exception e) {/* Ignore error */ }
     }
 
@@ -149,13 +145,13 @@ public class SeleniumWebDriver extends TestListenerAdapter {
         return excludedMethods.get() != null && excludedMethods.get().contains(tr.getMethod().getMethodName());
     }
 
-    private boolean isDriverRunning() {
+    private boolean isDriverRunning(ITestResult tr) {
         Field webDriver = webDriverField.get();
         if (webDriver == null) return false;
 
         // Horrid way to check if .quit() was called on the driver.
         try {
-            WebDriver driver = (WebDriver) webDriver.get(testClassInstance.get());
+            WebDriver driver = (WebDriver) webDriver.get(tr.getInstance());
             driver.getTitle();
             return true;
         } catch (Exception e) { return false; }
@@ -224,22 +220,13 @@ public class SeleniumWebDriver extends TestListenerAdapter {
      *
      * @param tr ITestResult from TestNG
      */
-    private void setTestDescription(ITestResult tr) {
+    private String getTestDescription(ITestResult tr) {
         String description = tr.getMethod().getDescription();
         if (description != null && !description.equals("")) {
-            testDescription.set(description);
+            return description;
         } else {
-            testDescription.set(null);
+            return null;
         }
-    }
-
-    /**
-     * Populates the testClassInstance field with the Object we are currently running
-     *
-     * @param tr ITestResult from TestNG
-     */
-    private void setTestClassInstance(ITestResult tr) {
-        testClassInstance.set(tr.getInstance());
     }
 
     private boolean isClassDriver() {

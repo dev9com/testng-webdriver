@@ -20,7 +20,7 @@ import static util.Util.sleep;
 @Test
 @Listeners({SeleniumWebDriver.class})
 public class TestMethodDriverFactory {
-    @MethodDriver
+    @MethodDriver(excludeMethods = {"dependsOnMethod"})
     public WebDriver driver;
 
     private int i;
@@ -58,5 +58,10 @@ public class TestMethodDriverFactory {
             default:
                 throw new IllegalStateException("[" + i + "] is an unknown url digit!");
         }
+    }
+
+    @Test(dependsOnMethods = {"testFactoryValues"}, alwaysRun = true)
+    public void dependsOnMethod() throws Exception {
+        Assert.assertTrue(driver == null);
     }
 }
