@@ -20,19 +20,19 @@
         <repository>
             <id>cloudbees-private-release-repository</id>
             <name>CloudBees Repository</name>
-            <url>dav:https://repository-dynacrongroup.forge.cloudbees.com/release/</url>
+            <url>dav:https://repository-dev9.forge.cloudbees.com/release/</url>
         </repository>
         <site>
             <id>cloudbees-private-release-repository</id>
             <name>CloudBees Repository</name>
-            <url>dav:https://repository-dynacrongroup.forge.cloudbees.com/release/sites/${project.artifactId}</url>
+            <url>dav:https://repository-dev9.forge.cloudbees.com/release/sites/${project.artifactId}</url>
         </site>
     </distributionManagement>
 
     <scm>
-        <connection>scm:git:git@github.com:dynacron-group/${project.artifactId}.git</connection>
-        <developerConnection>scm:git:git@github.com:dynacron-group/${project.artifactId}.git</developerConnection>
-        <url>scm:git:git@github.com:dynacron-group/${project.artifactId}.git</url>
+        <connection>scm:git:git@github.com:dev9com/${project.artifactId}.git</connection>
+        <developerConnection>scm:git:git@github.com:dev9com/${project.artifactId}.git</developerConnection>
+        <url>scm:git:git@github.com:dev9com/${project.artifactId}.git</url>
     </scm>
 
     <repositories>
