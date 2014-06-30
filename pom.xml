@@ -99,7 +99,7 @@
 
             <plugin>
                 <artifactId>maven-site-plugin</artifactId>
-                <version>3.2</version>
+                <version>3.3</version>
                 <executions>
                     <execution>
                         <id>attach-descriptor</id>
