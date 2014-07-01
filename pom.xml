@@ -37,10 +37,10 @@
   </scm>
 
     <repositories>
-        <!-- Grants access to Dynacron dependencies -->
+        <!-- Grants access to dev9 dependencies -->
         <repository>
             <id>cloudbees</id>
-            <url>https://repository-dynacrongroup.forge.cloudbees.com/release/</url>
+            <url>https://repository-dev9.forge.cloudbees.com/release/</url>
         </repository>
     </repositories>
 
