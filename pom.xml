@@ -4,7 +4,7 @@
 
     <groupId>com.dev9</groupId>
     <artifactId>testng-webdriver</artifactId>
-    <version>2.13</version>
+    <version>2.14-SNAPSHOT</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -33,7 +33,7 @@
         <connection>scm:git:git@github.com:dev9com/${project.artifactId}.git</connection>
         <developerConnection>scm:git:git@github.com:dev9com/${project.artifactId}.git</developerConnection>
         <url>scm:git:git@github.com:dev9com/${project.artifactId}.git</url>
-      <tag>testng-webdriver-2.13</tag>
+      <tag>testng-webdriver-2.4</tag>
   </scm>
 
     <repositories>
