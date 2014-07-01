@@ -28,14 +28,14 @@ Usage
             <repositories>
                 <repository>
                     <id>cloudbees</id>
-                    <url>https://repository-dynacrongroup.forge.cloudbees.com/release/</url>
+                    <url>https://repository-dev9.forge.cloudbees.com/release/</url>
                 </repository>
             </repositories>
             <dependencies>
                 <dependency>
-                    <groupId>com.dynacrongroup</groupId>
+                    <groupId>com.dev9</groupId>
                     <artifactId>testng-webdriver</artifactId>
-                    <version>2.2</version>
+                    <version>2.14</version>
                 </dependency>
             </dependencies>
         ...
