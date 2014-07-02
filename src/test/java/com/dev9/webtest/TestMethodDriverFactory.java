@@ -1,7 +1,7 @@
-package com.dynacrongroup.webtest;
+package com.dev9.webtest;
 
-import com.dynacrongroup.webtest.annotation.MethodDriver;
-import com.dynacrongroup.webtest.listeners.SeleniumWebDriver;
+import com.dev9.webtest.annotation.MethodDriver;
+import com.dev9.webtest.listeners.SeleniumWebDriver;
 import org.openqa.selenium.WebDriver;
 import org.testng.Assert;
 import org.testng.annotations.Factory;
@@ -14,7 +14,7 @@ import static util.Util.sleep;
 /**
  * The purpose of this class is to verify method driver is created when the test class contains a factory.
  *
- * @author <a href="mailto:Justin.Graham@dynacrongroup.com">Justin Graham</a>
+ * @author <a href="mailto:Justin.Graham@dev9.com">Justin Graham</a>
  * @since 11/4/13
  */
 @Test
